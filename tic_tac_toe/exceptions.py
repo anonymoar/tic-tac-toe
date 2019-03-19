@@ -1,0 +1,2 @@
+class WrongCommand(Exception):
+    pass
