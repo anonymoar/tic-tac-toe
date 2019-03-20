@@ -31,7 +31,9 @@ def make_step(sock: socket.socket, game: Game):
     def make_move():
         cell = input("Ваш ход: ")
         while not re.match(r"[A-Z] \d", cell) or ord(cell.split(" ")[0]) - 65 >= game.field_size:
-            print("Введите клетку в формате: Буква Цифра. Клетка не должна выходить за пределы игрового поля.")
+            print(
+                "Введите клетку в формате: Буква Цифра. Клетка не должна выходить за пределы игрового поля."
+            )
             cell = input("Ваш ход: ")
         own_x, own_y = cell.split(" ")
         is_move_sucсess = False

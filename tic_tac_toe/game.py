@@ -9,6 +9,7 @@ FIRST_SIDE = "X"
 SECOND_SIDE = "O"
 DRAW = "DRAW"
 
+
 class Game:
     def __init__(self, field_size: int, side: str, gamer_name: str, enemy_name: str):
         self.field = []

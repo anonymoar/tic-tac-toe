@@ -1,8 +1,8 @@
 import pytest
 from pytest_mock import MockFixture
-
-from tic_tac_toe.exceptions import WrongCommand
 from tic_tac_toe.client import init_game, make_step
+from tic_tac_toe.exceptions import WrongCommand
+
 from tests.helpers.input import set_stdin_value
 from tests.helpers.socket import get_socket_with_mocked_recv
 
