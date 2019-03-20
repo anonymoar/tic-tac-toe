@@ -30,12 +30,24 @@ def init_game(sock: socket.socket, gamer_name: str) -> Game:
 def make_step(sock: socket.socket, game: Game):
     def make_move():
         cell = input("Ваш ход: ")
-        while not re.match(r"[A-Z] \d", cell):
-            print("Введите клетку в формете: Буква Цифра")
+        while not re.match(r"[A-Z] \d", cell) or ord(cell.split(" ")[0]) - 65 >= game.field_size:
+            print("Введите клетку в формате: Буква Цифра. Клетка не должна выходить за пределы игрового поля.")
             cell = input("Ваш ход: ")
         own_x, own_y = cell.split(" ")
-        game.move(ord(own_x) - 65, int(own_y) - 1)
-        sock.sendall(f"MOVE {cell}".encode("utf-8"))
+        is_move_sucсess = False
+        while not is_move_sucсess:
+            try:
+                game.move(ord(own_x) - 65, int(own_y) - 1)
+
+            except Exception as e:
+                print(is_move_sucсess)
+                print(e)
+                make_move()
+
+            is_move_sucсess = True
+            print(is_move_sucсess)
+            sock.sendall(f"MOVE {cell}".encode("utf-8"))
+            print("MEOW")
 
     game_over = False
     print(f"Ожидание хода игрока {game.enemy_name}")
@@ -45,7 +57,11 @@ def make_step(sock: socket.socket, game: Game):
 
     if command == "MOVE":
         enemy_x, enemy_y, *rest = arguments
-        game.move(ord(enemy_x) - 65, int(enemy_y) - 1, ENEMY_SIDE)
+        try:
+            print(enemy_x, enemy_y)
+            game.move(ord(enemy_x) - 65, int(enemy_y) - 1, ENEMY_SIDE)
+        except Exception as e:
+            print(e)
 
         if rest:
             game_over = True
@@ -55,7 +71,7 @@ def make_step(sock: socket.socket, game: Game):
             if winner == "DRAW":
                 print("Результат игры - ничья")
             else:
-                print(f"Выиграл игрок {winner}")
+                print(f"Выиграл игрок {game.gamer_name if winner == OWN_SIDE else game.enemy_name}")
 
             return game_over
     elif command == "STOP":
@@ -65,7 +81,7 @@ def make_step(sock: socket.socket, game: Game):
         if winner == "DRAW":
             print("Результат игры - ничья")
         else:
-            print(f"Выиграл игрок {winner}")
+            print(f"Выиграл игрок {game.gamer_name if winner == OWN_SIDE else game.enemy_name}")
 
         return game_over
     else:

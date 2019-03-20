@@ -29,29 +29,42 @@ def init_game(sock: socket.socket, field_size: int, gamer_name: str) -> Game:
 
 def make_step(sock: socket.socket, game: Game):
     game_over = False
-
-    cell = input("Ваш ход: ")
-    while not re.match(r"^[A-Z] \d$", cell):
-        print("Введите клетку в формете: Буква Цифра")
+    def make_move(is_move_success):
         cell = input("Ваш ход: ")
-    own_x, own_y = cell.split(" ")
-    game.move(ord(own_x) - 65, int(own_y) - 1)
+        while not re.match(r"^[A-Z] \d$", cell) or ord(cell.split(" ")[0]) - 65 >= game.field_size:
+            print("Введите клетку в формате: Буква Цифра. Клетка не должна выходить за пределы игрового поля.")
+            cell = input("Ваш ход: ")
+        own_x, own_y = cell.split(" ")
+        while not is_move_success:
+            try:
+                print(cell)
+                game.move(ord(own_x) - 65, int(own_y) - 1)
+            except Exception as e:
+                print(e)
+                cell = make_move(is_move_success)
+            is_move_success = True
 
+        print(cell)
+        return cell
+
+    cell = make_move(False)
+    print(cell)
     game.draw()
     winner = game.check_winner()
 
-    if winner != "":
+    if winner:
         game_over = True
         if winner == "DRAW":
             print("Результат игры - ничья")
         else:
-            print(f"Выиграл игрок {winner}")
+            print(f"Выиграл игрок {game.gamer_name if winner == OWN_SIDE else game.enemy_name}")
 
         sock.sendall(f"MOVE {cell} STOP {winner}".encode("utf-8"))
         sock.close()
 
         return game_over
     else:
+        print(cell)
         sock.sendall(f"MOVE {cell}".encode("utf-8"))
 
     print(f"Ожидание хода игрока {game.enemy_name}")
@@ -61,19 +74,22 @@ def make_step(sock: socket.socket, game: Game):
 
     if command == "MOVE":
         enemy_x, enemy_y = arguments
-        game.move(ord(enemy_x) - 65, int(enemy_y) - 1, ENEMY_SIDE)
+        try:
+            game.move(ord(enemy_x) - 65, int(enemy_y) - 1, ENEMY_SIDE)
+        except Exception as e:
+            print(e)
     else:
-        raise WrongCommand
+        print("Неверная команда")
 
     winner = game.check_winner()
     game.draw()
 
-    if winner != "":
+    if winner:
         sock.sendall(f"STOP {winner}".encode("utf-8"))
         if winner == "DRAW":
             print("Результат игры - ничья")
         else:
-            print(f"Выиграл игрок {winner}")
+            print(f"Выиграл игрок {game.gamer_name if winner == OWN_SIDE else game.enemy_name}")
         game_over = True
         sock.close()
 
@@ -116,6 +132,7 @@ def main():
                     break
         except WrongCommand:
             print("Клиент передал некорректную команду", file=sys.stderr)
+            #make_step(conn, game)
             sock.close()
         except OSError as e:
             print(e, file=sys.stderr)

@@ -8,17 +8,17 @@ from tests.helpers.socket import get_socket_with_mocked_recv
 
 
 def test_game_initializes(mocker: MockFixture):
-    with mocker.patch("socket.socket") as mock_socket_cls:
-        sock = get_socket_with_mocked_recv(mock_socket_cls, "HELO happy Pascal 3x3".encode("utf-8"))
+    mock_socket_cls = mocker.patch("socket.socket")
+    sock = get_socket_with_mocked_recv(mock_socket_cls, "HELO happy Pascal 3x3".encode("utf-8"))
 
-        try:
-            game = init_game(sock, "boring Hawking")
-        except WrongCommand:
-            pytest.fail()
-            return
+    try:
+        game = init_game(sock, "boring Hawking")
+    except WrongCommand:
+        pytest.fail()
+        return
 
-        assert game.field_size == 3
-        assert game.enemy_name == "happy Pascal"
+    assert game.field_size == 3
+    assert game.enemy_name == "happy Pascal"
 
 
 def test_game_starts_incorrectly(mocker: MockFixture):
