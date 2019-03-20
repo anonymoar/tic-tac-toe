@@ -5,8 +5,8 @@ class WrongMove(Exception):
     pass
 
 
-FIRST_SIDE = "X"
-SECOND_SIDE = "O"
+X_SIDE = "X"
+Y_SIDE = "O"
 DRAW = "DRAW"
 
 
@@ -30,31 +30,29 @@ class Game:
 
         self.field[x][y] = side if side else self.side
 
-    def check_winner(self):
-        x_winner_line = FIRST_SIDE * self.field_size
-        o_winner_line = SECOND_SIDE * self.field_size
+    def check_is_winner(self, side):
+        winner_line = side * self.field_size
 
         for line in range(self.field_size):
             current_row = "".join(self.field[line])
             current_column = "".join([item[line] for item in self.field])
 
-            if current_row == x_winner_line or current_column == x_winner_line:
-                return FIRST_SIDE
-
-            if current_row == o_winner_line or current_column == o_winner_line:
-                return SECOND_SIDE
+            if current_row == winner_line or current_column == winner_line:
+                return side
 
         if (
-            "".join([item[i] for i, item in enumerate(self.field)]) == x_winner_line
-            or "".join([item[::-1][i] for i, item in enumerate(self.field)]) == x_winner_line
+            "".join([item[i] for i, item in enumerate(self.field)]) == winner_line
+            or "".join([item[::-1][i] for i, item in enumerate(self.field)]) == winner_line
         ):
-            return FIRST_SIDE
+            return side
 
-        if (
-            "".join([item[i] for i, item in enumerate(self.field)]) == o_winner_line
-            or "".join([item[::-1][i] for i, item in enumerate(self.field)]) == o_winner_line
-        ):
-            return SECOND_SIDE
+        return None
+
+    def check_winner(self):
+        if self.check_is_winner(X_SIDE):
+            return X_SIDE
+        elif self.check_is_winner(Y_SIDE):
+            return Y_SIDE
 
         if len([j[i] for j in self.field for i in range(self.field_size) if j[i] == ""]) == 0:
             return DRAW
