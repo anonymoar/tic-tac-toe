@@ -1,4 +1,5 @@
 import argparse
+import logging
 import re
 import socket
 
@@ -27,7 +28,7 @@ def init_game(sock: socket.socket, gamer_name: str) -> Game:
             raise WrongCommand
 
 
-def make_step(sock: socket.socket, game: Game):
+def make_step(sock: socket.socket, game: Game) -> bool:
     def make_move():
         cell = input("Ваш ход: ")
         while not re.match(r"[A-Z] \d", cell) or ord(cell.split(" ")[0]) - 65 >= game.field_size:
@@ -42,14 +43,10 @@ def make_step(sock: socket.socket, game: Game):
                 game.move(ord(own_x) - 65, int(own_y) - 1)
                 sock.sendall(f"MOVE {cell}".encode("utf-8"))
             except Exception as e:
-                print(is_move_success)
                 print(e)
                 make_move()
 
             is_move_success = True
-            print(is_move_success)
-
-            print("MEOW")
 
     game_over = False
     print(f"Ожидание хода игрока {game.enemy_name}")
@@ -60,7 +57,6 @@ def make_step(sock: socket.socket, game: Game):
     if command == "MOVE":
         enemy_x, enemy_y, *rest = arguments
         try:
-            print(enemy_x, enemy_y)
             game.move(ord(enemy_x) - 65, int(enemy_y) - 1, ENEMY_SIDE)
         except Exception as e:
             print(e)
@@ -68,7 +64,7 @@ def make_step(sock: socket.socket, game: Game):
         if rest:
             game_over = True
             winner = rest[1]
-            game.draw()
+            print(game.draw())
 
             if winner == "DRAW":
                 print("Результат игры - ничья")
@@ -89,10 +85,10 @@ def make_step(sock: socket.socket, game: Game):
     else:
         raise WrongCommand
 
-    game.draw()
+    print(game.draw())
 
     make_move()
-    game.draw()
+    print(game.draw())
 
     return game_over
 
@@ -109,11 +105,16 @@ def main():
         gamer_name = get_name()
         print(f"Привет, игрок {gamer_name}")
 
-        game = init_game(sock, gamer_name)
+        try:
+            game = init_game(sock, gamer_name)
+        except WrongCommand:
+            logging.exception("Сервер передал некорректную команду", exc_info=False)
+            exit(1)
+
         print(f"К вам присоединился игрок {game.enemy_name}")
         print(f"Размер поля - {game.field_size}x{game.field_size}")
 
-        game.draw()
+        print(game.draw())
 
         while True:
             game_over = make_step(sock, game)

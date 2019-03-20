@@ -30,7 +30,7 @@ class Game:
 
         self.field[x][y] = side if side else self.side
 
-    def check_is_winner(self, side):
+    def check_is_winner(self, side: str) -> Optional[str]:
         winner_line = side * self.field_size
 
         for line in range(self.field_size):
@@ -48,7 +48,7 @@ class Game:
 
         return None
 
-    def check_winner(self):
+    def check_winner(self) -> Optional[str]:
         if self.check_is_winner(X_SIDE):
             return X_SIDE
         elif self.check_is_winner(Y_SIDE):
@@ -59,15 +59,17 @@ class Game:
 
         return None
 
-    def draw(self):
-        first_line = "  "
+    def draw(self) -> str:
+        result_line = "  "
         for i, _ in enumerate(self.field):
-            first_line += f"| {i + 1} "
+            result_line += f"| {i + 1} "
 
-        print(first_line)
+        result_line += "\n"
         for i in range(self.field_size):
             line = f"{chr(i + 65)} |"
             for j in self.field[i]:
                 symb = j or " "
                 line += f" {symb}  "
-            print(line)
+            result_line += line + "\n"
+
+        return result_line

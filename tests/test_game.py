@@ -93,11 +93,7 @@ def test_draw(capsys):
     game.move(1, 0, "O")
     game.move(1, 1, "X")
     game.move(2, 2, "O")
-    game.draw()
-    out, _ = capsys.readouterr()
-
-    # TODO: Подумать о том чтобы сделать join вместо длинной строки
     assert (
-        out
+        game.draw()
         == "  | 1 | 2 | 3 | 4 \nA | X       O      \nB | O   X          \nC |         O      \nD |                \n"
     )

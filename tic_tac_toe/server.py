@@ -1,4 +1,5 @@
 import argparse
+import logging
 import re
 import socket
 import sys
@@ -27,10 +28,10 @@ def init_game(sock: socket.socket, field_size: int, gamer_name: str) -> Game:
             raise WrongCommand
 
 
-def make_step(sock: socket.socket, game: Game):
+def make_step(sock: socket.socket, game: Game) -> bool:
     game_over = False
 
-    def make_move(is_move_success):
+    def make_move(is_move_success: bool = False) -> str:
         cell = input("Ваш ход: ")
         while not re.match(r"^[A-Z] \d$", cell) or ord(cell.split(" ")[0]) - 65 >= game.field_size:
             print(
@@ -40,19 +41,16 @@ def make_step(sock: socket.socket, game: Game):
         own_x, own_y = cell.split(" ")
         while not is_move_success:
             try:
-                print(cell)
                 game.move(ord(own_x) - 65, int(own_y) - 1)
             except Exception as e:
                 print(e)
                 cell = make_move(is_move_success)
             is_move_success = True
 
-        print(cell)
         return cell
 
     cell = make_move(False)
-    print(cell)
-    game.draw()
+    print(game.draw())
     winner = game.check_winner()
 
     if winner:
@@ -67,7 +65,6 @@ def make_step(sock: socket.socket, game: Game):
 
         return game_over
     else:
-        print(cell)
         sock.sendall(f"MOVE {cell}".encode("utf-8"))
 
     print(f"Ожидание хода игрока {game.enemy_name}")
@@ -85,7 +82,7 @@ def make_step(sock: socket.socket, game: Game):
         raise WrongCommand
 
     winner = game.check_winner()
-    game.draw()
+    print(game.draw())
 
     if winner:
         sock.sendall(f"STOP {winner}".encode("utf-8"))
@@ -126,7 +123,7 @@ def main():
             game = init_game(conn, field_size, gamer_name)
             print(f"К вам присоединился игрок {game.enemy_name}")
 
-            game.draw()
+            print(game.draw())
 
             while True:
                 game_over = make_step(conn, game)
@@ -134,11 +131,10 @@ def main():
                 if game_over:
                     break
         except WrongCommand:
-            print("Клиент передал некорректную команду", file=sys.stderr)
-            # make_step(conn, game)
+            logging.exception("Клиент передал некорректную команду", exc_info=False)
             sock.close()
         except OSError as e:
-            print(e, file=sys.stderr)
+            logging.exception(str(e), exc_info=True)
             sock.close()
 
 
