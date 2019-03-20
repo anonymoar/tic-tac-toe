@@ -82,7 +82,7 @@ def make_step(sock: socket.socket, game: Game):
         except Exception as e:
             print(e)
     else:
-        print("Неверная команда")
+        raise WrongCommand
 
     winner = game.check_winner()
     game.draw()

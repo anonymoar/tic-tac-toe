@@ -17,19 +17,20 @@ def test_move_success():
     assert game.field[1][1] == game.side
 
 
-def test_move_raises_wrong_move_exception_cell_not_found():
+@pytest.mark.parametrize(
+    "moves, error_message",
+    [
+        ((3, 3), "Такой клетки не существует"),
+        ((-1, 4), "Такой клетки не существует"),
+        ((-1, -2), "Такой клетки не существует"),
+        ((-1, 1), "Такой клетки не существует"),
+    ],
+)
+def test_move_raises_wrong_move_exception_cell_not_found(moves, error_message):
     game = Game(2, "X", "MEOW", "KOTIK")
     with pytest.raises(WrongMove) as excinfo:
-        game.move(3, 3)
-    assert "Такой клетки не существует" in str(excinfo.value)
-    with pytest.raises(WrongMove) as excinfo:
-        game.move(-1, 4)
-    assert "Такой клетки не существует" in str(excinfo.value)
-    with pytest.raises(WrongMove) as excinfo:
-        game.move(-1, -2)
-    assert "Такой клетки не существует" in str(excinfo.value)
-    with pytest.raises(WrongMove) as excinfo:
-        game.move(-1, 1)
+        x, y = moves
+        game.move(x, y)
     assert "Такой клетки не существует" in str(excinfo.value)
 
 

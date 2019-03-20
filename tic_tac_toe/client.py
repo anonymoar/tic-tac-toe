@@ -36,18 +36,18 @@ def make_step(sock: socket.socket, game: Game):
             )
             cell = input("Ваш ход: ")
         own_x, own_y = cell.split(" ")
-        is_move_sucсess = False
-        while not is_move_sucсess:
+        is_move_success = False
+        while not is_move_success:
             try:
                 game.move(ord(own_x) - 65, int(own_y) - 1)
                 sock.sendall(f"MOVE {cell}".encode("utf-8"))
             except Exception as e:
-                print(is_move_sucсess)
+                print(is_move_success)
                 print(e)
                 make_move()
 
-            is_move_sucсess = True
-            print(is_move_sucсess)
+            is_move_success = True
+            print(is_move_success)
 
             print("MEOW")
 
